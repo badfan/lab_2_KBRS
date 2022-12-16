@@ -2,6 +2,7 @@ package main
 
 import (
 	"lab_2_KBRS/handlers"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	socketio "github.com/googollee/go-socket.io"
@@ -52,7 +53,9 @@ func main() {
 	}()
 	defer server.Close()
 
-	router.GET("/socket", gin.WrapH(server))
+	router.GET("/socket.io/*any", gin.WrapH(server))
+	router.POST("/socket.io/*any", gin.WrapH(server))
+	router.StaticFS("/public", http.Dir("../asset"))
 
 	if err := router.Run(":8000"); err != nil {
 		logger.Fatalf("error occurred while running app : %v", err)
