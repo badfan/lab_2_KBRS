@@ -4,7 +4,6 @@ import (
 	"lab_2_KBRS/handlers"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	socketio "github.com/googollee/go-socket.io"
 	"go.uber.org/zap"
 )
@@ -41,7 +40,6 @@ func main() {
 	logger := InitLogger()
 	defer logger.Sync()
 
-	router := gin.New()
 	server := socketio.NewServer(nil)
 	h := handlers.NewHandler(logger)
 	InitSocketServer(server, h, logger)
@@ -53,11 +51,12 @@ func main() {
 	}()
 	defer server.Close()
 
-	router.GET("/socket.io/*any", gin.WrapH(server))
-	router.POST("/socket.io/*any", gin.WrapH(server))
-	router.StaticFS("/public", http.Dir("../asset"))
+	http.Handle("/socket.io/", server)
 
-	if err := router.Run(":8000"); err != nil {
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/", fs)
+
+	if err := http.ListenAndServe(":5000", nil); err != nil {
 		logger.Fatalf("error occurred while running app : %v", err)
 	}
 }
